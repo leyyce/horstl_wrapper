@@ -24,6 +24,7 @@ class Scrapper:
 
     # TODO Break method down
     def get_time_table(self) -> TimeTable:
+        base_response_length = 8
         src = self.__get_time_table_src()
         soup = BeautifulSoup(src, "html.parser")
         days = soup.find_all("li", {"class": ["column", "bank_holiday"]})
@@ -37,7 +38,7 @@ class Scrapper:
                 strip().\
                 split(",")
             dow = raw_date[0]
-            date = raw_date[1][0:11]
+            date = raw_date[1][1:11]
 
             current_day = Day(dow, date)
             time_table.days[tt_day] = current_day
@@ -49,7 +50,7 @@ class Scrapper:
                     .replace("Status: ", "\n") \
                     .replace(" Durchführende Dozentinnen/Dozenten: ", "\n") \
                     .split("\n")
-                if len(raw_lines) == 8:
+                if len(raw_lines) == base_response_length:
                     name = raw_lines[0].replace("\xa0", " ")
                     kind = raw_lines[1] \
                         .split(",")[0] \
@@ -65,24 +66,24 @@ class Scrapper:
                     status = raw_lines[7]
                     warning = "None"
                     c = Course(name, kind, pg, time, frequency, course_period, room_info, docent, status, warning)
-                elif len(raw_lines) == 11:
+                else:
                     warning = ""
-                    for line in raw_lines[0:4]:
+                    for line in raw_lines[0:-7]:
                         if len(line) > 0:
                             warning += line + " "
-                    name = raw_lines[4].replace("\xa0", " ")
-                    kind = raw_lines[5] \
+                    name = raw_lines[-7].replace("\xa0", " ")
+                    kind = raw_lines[-6] \
                         .split(",")[0] \
                         .strip()
-                    pg = raw_lines[5] \
+                    pg = raw_lines[-6] \
                         .split(",")[1] \
                         .strip()
-                    time = raw_lines[6]
-                    frequency = raw_lines[7]
-                    course_period = raw_lines[8]
-                    room_info = raw_lines[9].replace("\xa0", " ")
+                    time = raw_lines[-5]
+                    frequency = raw_lines[-4]
+                    course_period = raw_lines[-3]
+                    room_info = raw_lines[-2].replace("\xa0", " ")
                     docent = "No information available."
-                    status = raw_lines[10]
+                    status = raw_lines[-1]
                     c = Course(name, kind, pg, time, frequency, course_period, room_info, docent, status, warning)
                 current_day.add_course(c)
         return time_table

@@ -7,7 +7,7 @@ class Day:
     courses = None
 
     def __init__(self, dow: str, date: str):
-        self.name = dow
+        self.dow = dow
         self.date = date
         self.courses = []
 

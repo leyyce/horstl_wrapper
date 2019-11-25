@@ -16,12 +16,13 @@ class TimeTable:
             "saturday": Day,
         }
 
-    def to_string(self):
+    def to_string(self, separator_length: int = 60):
         table_str = ""
         table_str += self.student_name + "\n" * 2
         table_str += self.cw + "\n" * 3
         for day_name, day in self.days.items():
-            table_str += f"{day_name.capitalize()} - {day.date}:\n\n"
+            table_str += f"{day_name.capitalize()} - {day.date}:\n"
+            table_str += "-" * separator_length + "\n\n"
             if len(day.courses) > 0:
                 for course in day.courses:
                     table_str += f"\tName: {course.name}\n\tTyp: {course.kind}\n\t" \
@@ -31,7 +32,6 @@ class TimeTable:
                                  f"Status: {course.status}"
                     table_str += f"\n\tWarnung: {course.warning}\n\n" if course.warning is not "None" else "\n\n"
             else:
-                table_str += "\tNothing to show here. Looks like a free day :)"
-            table_str += "\n" * 2
-
+                table_str += "\tNothing to show here. Looks like a free day :)\n\n"
+            table_str += "\r" * 7 + "-" * separator_length + "\n" * 3
         return table_str
