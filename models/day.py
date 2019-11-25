@@ -3,8 +3,8 @@ from models.course import Course
 
 class Day:
 
-    date = None
-    courses = None
+    date = "No information available"
+    courses = []
 
     def __init__(self, dow: str, date: str):
         self.dow = dow
@@ -16,3 +16,16 @@ class Day:
 
     def set_date(self, date: str):
         self.date = date
+    
+    def to_string(self, separator_length: int = 65):
+        day_str = f"{self.dow.capitalize()} - {self.date}:\n"
+        day_str += "-" * separator_length + "\n\n"
+        if len(self.courses) > 0:
+            for course in self.courses:
+                day_str += "~" * separator_length + "\n"
+                day_str += course.to_string() + "\n"
+                day_str += "~" * separator_length + "\n" * 2
+        else:
+            day_str += "\tNothing to show here. Looks like a free day :)\n\n"
+        day_str += "-" * separator_length
+        return day_str

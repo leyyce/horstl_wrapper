@@ -1,26 +1,27 @@
 from dataclasses import dataclass
-import requests
+from requests import Session
 from bs4 import BeautifulSoup
 
+from helpers.base.scrapper import Scrapper
 from models.day import Day
 from models.course import Course
 from models.time_table import TimeTable
 
 
-class Scrapper:
+class HorstlScrapper(Scrapper):
 
     @dataclass
-    class PageIds:
+    class Pages:
         HOMEPAGE: str = "pages/cs/sys/portal/hisinoneStartPage.faces?page=1"
         LOGIN: str = "rds?state=user&type=1&category=auth.login"
         TIMETABLE: str = "pages/plan/individualTimetable.xhtml?_flowId=individualTimetableSchedule-flow"
 
+    __PAGES = Pages
+
     def __init__(self, fd_number: str, fd_password: str):
-        self.__BASE_URL = "https://horstl.hs-fulda.de/qisserver/"
-        self.__PAGE_IDS = self.PageIds
-        self.fd_number = fd_number
-        self.fd_password = fd_password
-        self.__SESSION = self.__get_auth_session()
+        base_url = "https://horstl.hs-fulda.de/qisserver/"
+        super().__init__(fd_number, fd_password, base_url)
+        self._set_session(self.__get_auth_session())
 
     # TODO Break method down
     def get_time_table(self) -> TimeTable:
@@ -51,7 +52,8 @@ class Scrapper:
                     .replace(" Durchführende Dozentinnen/Dozenten: ", "\n") \
                     .split("\n")
                 if len(raw_lines) == base_response_length:
-                    name = raw_lines[0].replace("\xa0", " ")
+                    ident = raw_lines[0].split("\xa0")[0]
+                    name = raw_lines[0].split("\xa0")[1]
                     kind = raw_lines[1] \
                         .split(",")[0] \
                         .strip()
@@ -65,13 +67,15 @@ class Scrapper:
                     docent = raw_lines[6]
                     status = raw_lines[7]
                     warning = "None"
-                    c = Course(name, kind, pg, time, frequency, course_period, room_info, docent, status, warning)
+                    c = Course(ident, name, kind, pg, time, frequency, course_period, room_info, docent, status,
+                               warning)
                 else:
                     warning = ""
                     for line in raw_lines[0:-7]:
                         if len(line) > 0:
                             warning += line + " "
-                    name = raw_lines[-7].replace("\xa0", " ")
+                    ident = raw_lines[-7].split("\xa0")[0]
+                    name = raw_lines[-7].split("\xa0")[1]
                     kind = raw_lines[-6] \
                         .split(",")[0] \
                         .strip()
@@ -84,12 +88,12 @@ class Scrapper:
                     room_info = raw_lines[-2].replace("\xa0", " ")
                     docent = "No information available."
                     status = raw_lines[-1]
-                    c = Course(name, kind, pg, time, frequency, course_period, room_info, docent, status, warning)
+                    c = Course(ident, name, kind, pg, time, frequency, course_period, room_info, docent, status, warning)
                 current_day.add_course(c)
         return time_table
 
     def __get_time_table_src(self):
-        s = self.__SESSION
+        s = self._SESSION
 
         # TODO Find out how to retrieve weeks that aren't the current week
         # payload does noting at the moment
@@ -103,18 +107,18 @@ class Scrapper:
         #    "plan:scheduleConfiguration:anzeigeoptionen:selectWeekInput:": "45. KW: 04.11.2019 - 10.11.2019",
         # }
 
-        tt_url = self.__BASE_URL + self.__PAGE_IDS.TIMETABLE
+        tt_url = self._BASE_URL + self.__PAGES.TIMETABLE
         return s.get(tt_url).text
 
     def __get_auth_session(self):
-        login_url = self.__BASE_URL + self.__PAGE_IDS.LOGIN
+        login_url = self._BASE_URL + self.__PAGES.LOGIN
 
         payload = {
             "asdf": self.fd_number,
             "fdsa": self.fd_password,
         }
 
-        session = requests.Session()
+        session = Session()
 
         session.post(login_url, payload)
 
