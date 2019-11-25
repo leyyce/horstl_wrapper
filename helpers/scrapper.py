@@ -1,5 +1,10 @@
 from dataclasses import dataclass
 import requests
+from bs4 import BeautifulSoup
+
+from models.day import Day
+from models.course import Course
+from models.time_table import TimeTable
 
 
 class Scrapper:
@@ -17,7 +22,72 @@ class Scrapper:
         self.fd_password = fd_password
         self.__SESSION = self.__get_auth_session()
 
-    def get_time_table_src(self):
+    # TODO Break method down
+    def get_time_table(self) -> TimeTable:
+        src = self.__get_time_table_src()
+        soup = BeautifulSoup(src, "html.parser")
+        days = soup.find_all("li", {"class": ["column", "bank_holiday"]})
+        student = soup.find("h1", {"id": "hisinoneTitle"}).text.strip()
+        time_period = soup.find("input", {"id": "plan:scheduleConfiguration:anzeigeoptionen:selectWeekInput"})["value"]
+
+        time_table = TimeTable(student, time_period)
+
+        for day_scrap, tt_day in zip(days, time_table.days.keys()):
+            raw_date = day_scrap.text.\
+                strip().\
+                split(",")
+            dow = raw_date[0]
+            date = raw_date[1][0:11]
+
+            current_day = Day(dow, date)
+            time_table.days[tt_day] = current_day
+
+            schedule = day_scrap.find_all("div", {"class": "schedulePanel"})
+            for course in schedule:
+                c = None
+                raw_lines = course.text \
+                    .replace("Status: ", "\n") \
+                    .replace(" Durchführende Dozentinnen/Dozenten: ", "\n") \
+                    .split("\n")
+                if len(raw_lines) == 8:
+                    name = raw_lines[0].replace("\xa0", " ")
+                    kind = raw_lines[1] \
+                        .split(",")[0] \
+                        .strip()
+                    pg = raw_lines[1] \
+                        .split(",")[1] \
+                        .strip()
+                    time = raw_lines[2]
+                    frequency = raw_lines[3]
+                    course_period = raw_lines[4]
+                    room_info = raw_lines[5].replace("\xa0", " ")
+                    docent = raw_lines[6]
+                    status = raw_lines[7]
+                    warning = "None"
+                    c = Course(name, kind, pg, time, frequency, course_period, room_info, docent, status, warning)
+                elif len(raw_lines) == 11:
+                    warning = ""
+                    for line in raw_lines[0:4]:
+                        if len(line) > 0:
+                            warning += line + " "
+                    name = raw_lines[4].replace("\xa0", " ")
+                    kind = raw_lines[5] \
+                        .split(",")[0] \
+                        .strip()
+                    pg = raw_lines[5] \
+                        .split(",")[1] \
+                        .strip()
+                    time = raw_lines[6]
+                    frequency = raw_lines[7]
+                    course_period = raw_lines[8]
+                    room_info = raw_lines[9].replace("\xa0", " ")
+                    docent = "No information available."
+                    status = raw_lines[10]
+                    c = Course(name, kind, pg, time, frequency, course_period, room_info, docent, status, warning)
+                current_day.add_course(c)
+        return time_table
+
+    def __get_time_table_src(self):
         s = self.__SESSION
 
         # TODO Find out how to retrieve weeks that aren't the current week
