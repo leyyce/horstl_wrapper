@@ -107,4 +107,4 @@ venv.bak/
 .idea/
 
 #Development files that shouldn't be comitted
-development/
+development/creds.py
