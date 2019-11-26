@@ -14,7 +14,7 @@ class Course:
         self.status = status
         self.warning = warning
 
-    def to_string(self):
+    def __str__(self):
         course_str = f"\tID: {self.id}\n\tName: {self.name}\n\tTyp: {self.kind}\n\t" \
                      f"Parralelgruppe: {self.group}\n\tZeit: {self.time}\n\t" \
                      f"Frequenz: {self.frequency}\n\tZeitraum: {self.time_period}\n\t" \

@@ -23,12 +23,13 @@ class MailMan:
             body = MailMan._get_body(mail)
             subject = mail["Subject"]
             if type(body) == bytes:
-                print(f'Message {num.decode()}\n{subject}\n\n{body.decode()}\n')
+                body = body.decode().replace("\n", "\n\t")
+                print(f'Message {num.decode()}\n{subject}\n\n\t{body}\n')
             else:
-                print(f'Message {num.decode()}\n{subject}\n\n{body}\n')
-            print("-" * 25)
+                body = body.replace("\n", "\n\t")
+                print(f'Message {num.decode()}\n{subject}\n\n\t{body}\n')
+            print("~" * 65)
         # print(self.mail_box.lsub())
-        self.log_out()
 
     @staticmethod
     def _get_charsets_(mail_):

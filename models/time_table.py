@@ -16,11 +16,11 @@ class TimeTable:
             "saturday": Day,
         })
 
-    def to_string(self):
+    def __str__(self):
         table_str = ""
         table_str += self.student_name + "\n" * 2
         table_str += self.cw + "\n" * 3
         for day in self.days.values():
-            table_str += day.to_string() + "\n" * 3
+            table_str += str(day) + "\n" * 3
         table_str = table_str[0:-3]
         return table_str
