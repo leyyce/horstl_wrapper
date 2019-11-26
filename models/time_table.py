@@ -1,5 +1,5 @@
-from models.course import Course
 from models.day import Day
+from helpers.base.object_dict import ObjDict
 
 
 class TimeTable:
@@ -7,14 +7,14 @@ class TimeTable:
     def __init__(self, student_name: str, cw: str):
         self.student_name = student_name
         self.cw = cw
-        self.days = {
+        self.days = ObjDict({
             "monday": Day,
             "tuesday": Day,
             "wednesday": Day,
             "thursday": Day,
             "friday": Day,
             "saturday": Day,
-        }
+        })
 
     def to_string(self):
         table_str = ""

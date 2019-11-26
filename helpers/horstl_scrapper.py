@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from requests import Session
 from bs4 import BeautifulSoup
 
@@ -6,17 +5,15 @@ from helpers.base.scrapper import Scrapper
 from models.day import Day
 from models.course import Course
 from models.time_table import TimeTable
+from enum import Enum
 
 
 class HorstlScrapper(Scrapper):
 
-    @dataclass
-    class Pages:
-        HOMEPAGE: str = "pages/cs/sys/portal/hisinoneStartPage.faces?page=1"
-        LOGIN: str = "rds?state=user&type=1&category=auth.login"
-        TIMETABLE: str = "pages/plan/individualTimetable.xhtml?_flowId=individualTimetableSchedule-flow"
-
-    __PAGES = Pages
+    class Pages(Enum):
+        HOMEPAGE = "pages/cs/sys/portal/hisinoneStartPage.faces?page=1"
+        LOGIN = "rds?state=user&type=1&category=auth.login"
+        TIMETABLE = "pages/plan/individualTimetable.xhtml?_flowId=individualTimetableSchedule-flow"
 
     def __init__(self, fd_number: str, fd_password: str):
         base_url = "https://horstl.hs-fulda.de/qisserver/"
@@ -106,12 +103,11 @@ class HorstlScrapper(Scrapper):
         #     "plan:scheduleConfiguration:anzeigeoptionen:selectWeek": "45_2019",
         #    "plan:scheduleConfiguration:anzeigeoptionen:selectWeekInput:": "45. KW: 04.11.2019 - 10.11.2019",
         # }
-
-        tt_url = self._BASE_URL + self.__PAGES.TIMETABLE
+        tt_url = f"{self._BASE_URL}{HorstlScrapper.Pages.TIMETABLE.value}"
         return s.get(tt_url).text
 
     def __get_auth_session(self):
-        login_url = self._BASE_URL + self.__PAGES.LOGIN
+        login_url = f"{self._BASE_URL}{HorstlScrapper.Pages.LOGIN.value}"
 
         payload = {
             "asdf": self.fd_number,
