@@ -23,13 +23,12 @@ def mail_test():
 
 def default():
     print("Welcome to the development script of horstl_wrapper!")
-    success = False
-    fd_num, password = None, None
-    while not success:
-        fd_num, password = _verify_login()
-        if fd_num is not None:
-            success = True
+    while True:
+        fd_num = input("LOGIN:\n\nEnter your fd number [fdxxxxxx]: ")
+        password = getpass("Enter your password: ")
+        if _verify_login(fd_num, password):
             print("Login successful!\n")
+            break
         else:
             print("Login failed. Try again:\n")
 
@@ -54,14 +53,12 @@ def default():
             print(f"ERROR: Looks like the option {check} is not valid. Please try again.")
 
 
-def _verify_login():
-    fd_num = input("LOGIN:\n\nEnter your fd number [fdxxxxxx]: ")
-    password = getpass("Enter your password: ")
+def _verify_login(fd_number: str, password: str) -> bool:
     try:
-        m = MailMan(fd_num, password)
+        MailMan(fd_number, password)
     except IMAP4_SSL.error:
-        return None, None
-    return fd_num, password
+        return False
+    return True
 
 
 if __name__ == '__main__':
