@@ -1,5 +1,5 @@
 import imaplib
-import email
+from models.uni_mail import UniMail
 
 
 class MailMan:
@@ -19,31 +19,9 @@ class MailMan:
         typ, data = self.mail_box.search(None, 'ALL')
         for num in data[0].split():
             typ, data = self.mail_box.fetch(num, '(RFC822)')
-            mail = email.message_from_bytes(data[0][1])
-            body = MailMan._get_body(mail)
-            subject = mail["Subject"]
-            if type(body) == bytes:
-                body = body.decode().replace("\n", "\n\t")
-                print(f'Message {num.decode()}\n{subject}\n\n\t{body}\n')
-            else:
-                body = body.replace("\n", "\n\t")
-                print(f'Message {num.decode()}\n{subject}\n\n\t{body}\n')
+            mail = UniMail(data[0][1])
+            body = mail.body
+            subject = mail.subject
+            print(f'Message {num.decode()}\n{subject}\n\n\t{body}\n')
             print("~" * 65)
         # print(self.mail_box.lsub())
-
-    @staticmethod
-    def _get_charsets_(mail_):
-        charsets = set({})
-        for c in mail_.get_charsets():
-            if c is not None:
-                charsets.update([c])
-            return charsets
-
-    @staticmethod
-    def _get_body(mail_):
-        while mail_.is_multipart():
-            mail_ = mail_.get_payload()[0]
-        t = mail_.get_payload(decode=True)
-        for charset in MailMan._get_charsets_(mail_):
-            t = t.decode(charset)
-        return t
