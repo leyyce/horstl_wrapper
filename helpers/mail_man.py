@@ -1,5 +1,5 @@
 import imaplib
-from models.uni_mail import UniMail
+from models.u_message import UMessage
 
 
 class MailMan:
@@ -19,9 +19,6 @@ class MailMan:
         typ, data = self.mail_box.search(None, 'ALL')
         for num in data[0].split():
             typ, data = self.mail_box.fetch(num, '(RFC822)')
-            mail = UniMail(data[0][1])
-            body = mail.body
-            subject = mail.subject
-            print(f'Message {num.decode()}\n{subject}\n\n\t{body}\n')
-            print("~" * 65)
+            message = UMessage(data[0][1])
+            print(str(message))
         # print(self.mail_box.lsub())
