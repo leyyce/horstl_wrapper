@@ -1,4 +1,4 @@
-from models.course import Course
+from horstl_wrapper.models.course import Course
 
 
 class Day:

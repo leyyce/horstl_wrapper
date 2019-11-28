@@ -1,5 +1,5 @@
-from models.day import Day
-from helpers.base.object_dict import ObjDict
+from horstl_wrapper.models import Day
+from horstl_wrapper.helpers.base import ObjDict
 
 
 class TimeTable:

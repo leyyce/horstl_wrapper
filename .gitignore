@@ -107,4 +107,4 @@ venv.bak/
 .idea/
 
 #Development files that shouldn't be comitted
-development/creds.py
+horstl_wrapper/development/creds.py

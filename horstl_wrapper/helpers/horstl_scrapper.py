@@ -1,10 +1,10 @@
 from requests import Session
 from bs4 import BeautifulSoup
 
-from helpers.base.scrapper import Scrapper
-from models.day import Day
-from models.course import Course
-from models.time_table import TimeTable
+from horstl_wrapper.helpers.base import Scrapper
+from horstl_wrapper.models import Day
+from horstl_wrapper.models import Course
+from horstl_wrapper.models import TimeTable
 from enum import Enum
 
 

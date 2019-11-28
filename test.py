@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
-from imaplib import IMAP4_SSL
 from getpass import getpass
 
-from helpers.horstl_scrapper import HorstlScrapper
-from helpers.mail_man import MailMan
-from development.creds import FD_NUMBER, PASSWORD
+from horstl_wrapper.helpers import HorstlScrapper
+from horstl_wrapper.helpers import MailMan
+from horstl_wrapper.development import FD_NUMBER, PASSWORD
 
 
 def time_table_test():
@@ -48,17 +47,13 @@ def default():
         elif check == 2:
             mail_man = MailMan(fd_num, password)
             mail_man.print_all_messages()
-            mail_man.log_out()
         else:
             print(f"ERROR: Looks like the option {check} is not valid. Please try again.")
 
 
 def _verify_login(fd_number: str, password: str) -> bool:
-    try:
-        MailMan(fd_number, password)
-    except IMAP4_SSL.error:
-        return False
-    return True
+    m = MailMan(fd_number, password)
+    return m.logged_in
 
 
 if __name__ == '__main__':
