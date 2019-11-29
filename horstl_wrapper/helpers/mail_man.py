@@ -22,16 +22,21 @@ class MailMan(Imbox):
             self.logged_in = False
         self._fd_number = fd_number
 
-    def print_all_messages(self) -> None:
-        all_messages = self.messages()
-        for uid, message in all_messages:
-            message = UMessage(message)
-            print(str(message))
-        # for num in data[0].split():
-        #     typ, data = self.mail_box.fetch(num, '(RFC822)')
-        #     message = UMessage(data[0][1])
-        #     print(str(message))
-        # print(self.mail_box.lsub())
+    def get_all_messages(self) -> list:
+        return [UMessage(message, uid) for uid, message in self.messages()]
+
+    def get_unread_messages(self) -> list:
+        return [UMessage(message, uid) for uid, message in self.messages(unread=True)]
+
+    def search_for_subject(self, subject: str) -> list:
+        return [UMessage(message, uid) for uid, message in self.messages(subject=subject)]
+
+    def search_for_sender(self, sender: str) -> list:
+        return [UMessage(message, uid) for uid, message in self.messages(sent_from=sender)]
+
+    def logout(self):
+        super().logout()
+        self.logged_in = False
 
     def __del__(self) -> None:
         if self.logged_in:
