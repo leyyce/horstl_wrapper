@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from getpass import getpass
 
+from horstl_wrapper import HorstlWrapper
 from horstl_wrapper.helpers import HorstlScrapper
 from horstl_wrapper.helpers import MailMan
 from horstl_wrapper.development import FD_NUMBER, PASSWORD
@@ -25,16 +26,14 @@ def mail_test():
             print(m)
 
 
+def wrapper_test():
+    horst = HorstlWrapper(FD_NUMBER, PASSWORD)
+
+
 def default():
     print("Welcome to the development script of horstl_wrapper!")
-    while True:
-        fd_num = input("LOGIN:\n\nEnter your fd number [fdxxxxxx]: ")
-        password = getpass("Enter your password: ")
-        if _verify_login(fd_num, password):
-            print("Login successful!\n")
-            break
-        else:
-            print("Login failed. Try again:\n")
+
+    fd_num, password = _login_prompt()
 
     task = ":pass"
     while len(task) != 0:
@@ -56,9 +55,15 @@ def default():
             mail_man = MailMan(fd_num, password)
             mail_task = ":pass"
             while len(mail_task) != 0:
-                mail_task = (input("MAILS:\nWhat do you want to do?\n\n"
+                login_text = f'You are logged in as {mail_man.fd_number}' if mail_man.connection_active()\
+                    else f'You are not logged in'
+                mail_task = (input(f"MAILS [{login_text}]:\n"
+                                   "What do you want to do?\n\n"
                                    "\t1: Show all mails\n\t2: Show new mails\n"
                                    "\t3: Search for subject\n"
+                                   "\t4: Check connection\n"
+                                   "\t5: Logout\n"
+                                   "\t6: Login\n"
                                    "\tEnter go back\n\n:> "))
                 try:
                     mail_check = int(mail_task)
@@ -82,6 +87,15 @@ def default():
                             print(m)
                     else:
                         print("Noting found.\n")
+                elif mail_check == 4:
+                    print(f'Connection: {"OK" if mail_man.connection_active() else "FAILED"}\n')
+                elif mail_check == 5:
+                    if mail_man.logged_in:
+                        mail_man.logout()
+                elif mail_check == 6:
+                    if not mail_man.logged_in:
+                        fd_num, password = _login_prompt()
+                        mail_man.reauthenticate(fd_num, password)
                 else:
                     print(f"ERROR: Looks like the option {mail_check} is not valid. Please try again.")
         else:
@@ -89,11 +103,21 @@ def default():
 
 
 def _verify_login(fd_number: str, password: str) -> bool:
-    m = MailMan(fd_number, password)
-    return m.logged_in
+    return MailMan(fd_number, password).logged_in
+
+
+def _login_prompt() -> (str, str):
+    while True:
+        fd_num = input("LOGIN:\n\nEnter your fd number [fdxxxxxx]: ")
+        password = getpass("Enter your password: ")
+        if _verify_login(fd_num, password):
+            return fd_num, password
+        else:
+            print("Login failed. Try again:\n")
 
 
 if __name__ == '__main__':
     # time_table_test()
     # mail_test()
+    # wrapper_test()
     default()
